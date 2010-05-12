@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "foo_autorating", "src\foo_autorating\foo_autorating.vcproj", "{22B4172E-64A7-411F-A988-A0ACECC15E33}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{22B4172E-64A7-411F-A988-A0ACECC15E33}.Debug|Win32.ActiveCfg = Debug|Win32
+		{22B4172E-64A7-411F-A988-A0ACECC15E33}.Debug|Win32.Build.0 = Debug|Win32
+		{22B4172E-64A7-411F-A988-A0ACECC15E33}.Release|Win32.ActiveCfg = Release|Win32
+		{22B4172E-64A7-411F-A988-A0ACECC15E33}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

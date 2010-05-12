@@ -1,0 +1,40 @@
+implement metadb_display_field_provider to provide fields to global titleformat
+parser. trick is that impl must be very efficient b/c parsing blocks the UI thread
+(whole app?). also, must raise alert when variable's value changes, or painting
+errors occur: components are allowed to cache values of parsed scripts, and cache
+needs to be updated when value changes.
+update is done by calling metadb_io::dispatch_refresh(). second trick is that
+dispatch_refresh wants a file handle, so it knows what has to be refreshed.
+i may be able to use metadb_callback to fnd out when playcount changes.
+because metadata update events do not indicate which data changed, I can get away
+with no alerting foobar of rating change when playcount changes.
+
+static_api_ptr_t<library_manager>()->is_item_in_library(handle) to check if playing track
+is in library or not.
+
+config dialog:
+show example ratings when sliders change
+	           track                            current       new         delta
+	bill bailey - "part troll"					[11600]		[10030]		[- 1570]
+	alannah myles - "rock this joint"			[10059]		[ 9967]		[-   92]
+	golden earring - "paradise in distress"		[11123]		[11905]		[+  782]
+track & current rating in black, positive change in blue, neg change in red?
+
+need to alert core when settings change
+
+need to alert core when rating changes because of decay outside of playback:
+autoplaylist where rating > 10500 does not drop tracks when rating drops, b/c not
+alerted that rating changed. columns ui displays the new rating, but that is an
+artifact of how cui is implemented.
+alert core every n hours that ratings have decayed:
+	don't need to alert for songs < 5 days old && pseudo-rating enabled, b/c they will stay at 10000
+ensuring that ratings change only once per hour is more difficult than I anticipated:
+assume a song is added to the library now, at 11.30. @c now and @c added will both
+be 11.00, so the track's age will be measured as 0.
+
+
+%play_count% is the official stat tag; other component uses %play_counter%.
+is there a way to detect which component is loaded?
+better yet, is there a way to detect whether a script completed successfully?
+metadb_handle::format_title() and titleformat_object::run() both return void.
+try using titleformat_common_methods::process_field().
