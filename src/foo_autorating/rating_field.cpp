@@ -126,33 +126,25 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 	//age lookup.
 	//I absolutely must find a way to get at playback info w/o scripting.
 	
-	file_info_impl info;
-	const bool haveInfo = file->get_info(info);
-	
-	static_api_ptr_t<library_manager> library;
-	metadb_handle::ptr handlePtr = file;
-	const bool shouldRate = g_rateOutsideLibrary || library->is_item_in_library(handlePtr);
+	const file_info* info;
+	const bool haveInfo = file->get_info_locked(info);
+
+//	static_api_ptr_t<library_manager> library;
+//	metadb_handle::ptr handlePtr = file;
+//	const bool shouldRate = g_rateOutsideLibrary || library->is_item_in_library(handlePtr);
+	const bool shouldRate = true;
 	
 	bool haveScripts = RatingFieldProvider::scriptsAreLoaded();
 	if(!haveScripts)
 		haveScripts = RatingFieldProvider::loadScripts();
 	
 	double rating = -1;
+
 	if(haveInfo && haveScripts && shouldRate) {
 		time_t now = time(0L);
-#if _DEBUG
-		tm date = {0};
-		date = *localtime(&now);
-		
-		time_t copy = mktime(&date);
-		assert(now == copy && "not storing times properly");
-#endif //debug
-		static const int secondsPerHour = 60 * 60;
-//		now -= now % secondsPerHour;
-//		assert(now % secondsPerHour == 0 && "time is not normalized");
 		
 		string8 result;
-		file->format_title(0L, result, _firstplayed, 0L);
+		file->format_title_nonlocking(0L, result, _firstplayed, 0L);
 		time_t time = makeTime(result);
 		
 		//if the song has not been played, use the current time.
@@ -165,7 +157,7 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 		//so the math below will return a meaningful answer.
 		assert(now >= firstplayed && "song was played in future");
 		
-		file->format_title(0L, result, _added, 0L);
+		file->format_title_nonlocking(0L, result, _added, 0L);
 		time = makeTime(result);
 		//versions of foo_playcount older than 2.3 do not record when a track was
 		//added to the library, and other statistic plugins may not record this value
@@ -181,7 +173,7 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 		//if the song is less than a week old, there is not enough listening history
 		//to examine to give a meaningful rating.
 		if(!g_haveMinimumAge || (g_haveMinimumAge && age > minimumAge)) {
-			file->format_title(0L, result, _lastplayed, 0L);
+			file->format_title_nonlocking(0L, result, _lastplayed, 0L);
 			time_t time = makeTime(result);
 			
 			//like the first play time, set this number to a legitimate value
@@ -193,10 +185,10 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 			assert(firstplayDelta >= 0 && lastplayDelta >= 0 && "play times are not normalized");
 			
 			//use the official playback stat field, if it exists
-			file->format_title(0L, result, _playcount, 0L);
+			file->format_title_nonlocking(0L, result, _playcount, 0L);
 			//if the field resolves to nothing, try the unofficial playback stat field
 			if(result.length() < 1)
-				file->format_title(0L, result, _playcount2, 0L);
+				file->format_title_nonlocking(0L, result, _playcount2, 0L);
 			
 			//@c result contains either a number > 0 or an empty string.
 			//if the string is empty, @c atoi will return 0, so I do not need to check
@@ -235,7 +227,6 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 		} else {
 			rating = 10000.0;
 		}
-		
 	}
 	
 	return static_cast<int>(rating);
