@@ -67,8 +67,8 @@ using std::max;
 #define NTDDI_VERSION NTDDI_WINXP
 
 #include<mbstring.h>
-#include<foobar/sdk/foobar2000.h>
-#include<foobar/ATLHelpers/ATLHelpers.h>
+#include<foobar2000/sdk/foobar2000.h>
+#include<foobar2000/ATLHelpers/ATLHelpers.h>
 #include<atldlgs.h>
 #include<atlddx.h>
 
