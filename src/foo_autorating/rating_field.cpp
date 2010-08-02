@@ -175,7 +175,7 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 		if(!g_haveMinimumAge || (g_haveMinimumAge && age > minimumAge)) {
 			file->format_title_nonlocking(0L, result, _lastplayed, 0L);
 			time_t time = makeTime(result);
-			
+
 			//like the first play time, set this number to a legitimate value
 			const time_t lastplayed = time ? time : now;
 			assert(now >= lastplayed && "song was played in future");
@@ -194,8 +194,8 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 			//if the string is empty, @c atoi will return 0, so I do not need to check
 			//@c result myself.
 			const int playcount = atoi(result);
-				
-			double length = file->get_length();
+
+			double length = info->get_length();
 			//intercept, THEN slope
 			length += g_lengthIntercept;
 			length *= g_lengthModifier;
@@ -223,7 +223,6 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 			rating -= penalty;
 			
 			rating = max(rating, 0.0);
-			
 		} else {
 			rating = 10000.0;
 		}
