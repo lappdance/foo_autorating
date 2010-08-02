@@ -42,6 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="C:\Users\jason\Code\foobar_sdk;C:\Users\jason\Code\wtl\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;FOO_AUTORATING_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -62,9 +63,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="pfc_d.lib foobar2000_sdk_d.lib shared.lib foobar2000_component_client_d.lib"
+				AdditionalDependencies="pfc.lib foobar2000_sdk.lib shared.lib foobar2000_component_client.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="$(programfiles)/lib/foobar"
+				AdditionalLibraryDirectories="C:\Users\jason\Code\foobar_sdk\foobar2000\shared;C:\Users\jason\Code\foobar_sdk\Debug"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				FixedBaseAddress="1"
@@ -90,7 +91,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(ProgramFiles)/foobar2000/components&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(AppData)/foobar2000/user-components/foo_autorating&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -121,6 +122,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="C:\Users\jason\Code\foobar_sdk;C:\Users\jason\Code\wtl\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FOO_AUTORATING_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -145,7 +147,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="pfc.lib foobar2000_sdk.lib shared.lib foobar2000_component_client.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="$(programfiles)/lib/foobar"
+				AdditionalLibraryDirectories="C:\Users\jason\Code\foobar_sdk\Release;C:\Users\jason\Code\foobar_sdk\foobar2000\shared"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -173,7 +175,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(ProgramFiles)/foobar2000/components&quot;"
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(AppData)/foobar2000/user-components/foo_autorating&quot;"
 			/>
 		</Configuration>
 	</Configurations>
