@@ -27,6 +27,7 @@ class RatingFieldProvider : public metadb_display_field_provider {
 		static titleformat_object::ptr _added;
 		static titleformat_object::ptr _firstplayed;
 		static titleformat_object::ptr _lastplayed;
+		static titleformat_object::ptr _rating;
 		
 		static time_t _now;
 	
@@ -36,6 +37,7 @@ class RatingFieldProvider : public metadb_display_field_provider {
 
 	private:
 		bool calculateRating(metadb_handle* handle, titleformat_text_out* out);
+		bool calculateHotness(metadb_handle* handle, titleformat_text_out* out);
 	
 	public: //metadb_display_field_provider methods
 		virtual t_uint32 get_field_count();
@@ -63,6 +65,16 @@ class RatingFieldProvider : public metadb_display_field_provider {
 		         etc.
 		**/
 		int getRating(metadb_handle* file) const;
+		/**
+		 Calculate a file's "hotness", how actively played it is.
+		 @param [in] file The file to rate.
+		 @return The file's hotness, [0..100]. It should be capped to 100, anyway.
+		         I'll have to experiment with the algorithm until I understand it.
+				 If the return value is < 0, there was an error and the hotness cannot
+		         be calculated: the handle is invalid, or, library data is not loaded,
+		         etc.
+		**/
+		int getHotness(metadb_handle* file) const;
 };
 
 class RatingPreview {

@@ -48,7 +48,8 @@ time_t makeTime(const char* text) {
 } //~namespace auto_rating
 
 const FieldInfo<RatingFieldProvider> RatingFieldProvider::_fieldInfo[] = {
-	{ "auto_rating", &RatingFieldProvider::calculateRating }
+	{ "auto_rating", &RatingFieldProvider::calculateRating },
+	{ "hotness", &RatingFieldProvider::calculateHotness }
 };
 
 titleformat_object::ptr RatingFieldProvider::_playcount;
@@ -56,13 +57,15 @@ titleformat_object::ptr RatingFieldProvider::_playcount2;
 titleformat_object::ptr RatingFieldProvider::_added;
 titleformat_object::ptr RatingFieldProvider::_firstplayed;
 titleformat_object::ptr RatingFieldProvider::_lastplayed;
+titleformat_object::ptr RatingFieldProvider::_rating;
 
 bool RatingFieldProvider::scriptsAreLoaded() {
 	return _playcount.is_valid() &&
 	       _playcount2.is_valid() &&
 	       _added.is_valid() &&
 	       _firstplayed.is_valid() &&
-	       _lastplayed.is_valid();
+	       _lastplayed.is_valid() &&
+		   _rating.is_valid();
 }
 
 bool RatingFieldProvider::loadScripts() {
@@ -71,7 +74,8 @@ bool RatingFieldProvider::loadScripts() {
 		{ "[%play_counter%]", _playcount2 },
 		{ "[%added%]", _added },
 		{ "[%first_played%]", _firstplayed },
-		{ "[%last_played%]", _lastplayed }
+		{ "[%last_played%]", _lastplayed },
+		{ "[%rating%]", _rating }
 	};
 	
 	bool success = true;
@@ -91,6 +95,18 @@ bool RatingFieldProvider::calculateRating(metadb_handle* handle,
 	const bool haveResult = rating >= 0;
 	if(haveResult) {
 		out->write_int(titleformat_inputtypes::unknown, rating);
+	}
+	
+	return haveResult;
+}
+
+bool RatingFieldProvider::calculateHotness(metadb_handle* handle,
+                                          titleformat_text_out* out) {	
+	const int hotness = this->getHotness(handle);
+	
+	const bool haveResult = hotness >= 0;
+	if(haveResult) {
+		out->write_int(titleformat_inputtypes::unknown, hotness);
 	}
 	
 	return haveResult;
@@ -229,4 +245,50 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 	}
 	
 	return static_cast<int>(rating);
+}
+
+int RatingFieldProvider::getHotness(metadb_handle* file) const {
+	//there are 24 hours in a day
+	//@c multiplier makes things be measured in hours instead of days
+	static const double multiplier = 24;
+	static const double baseFrequency = 90 * multiplier;
+	static const double baseDecay = 28 * multiplier;
+
+	const time_t now = time(0L);
+	
+	string8 result;
+	file->format_title_nonlocking(0L, result, _lastplayed, 0L);
+	time_t time = makeTime(result);
+	const time_t lastPlayed = time ? time : now;
+
+	file->format_title_nonlocking(0L, result, _firstplayed, 0L);
+	time = makeTime(result);
+	const time_t firstPlayed = time ? time : now;
+
+	//use the official playback stat field, if it exists
+	file->format_title_nonlocking(0L, result, _playcount, 0L);
+	//if the field resolves to nothing, try the unofficial playback stat field
+	if(result.length() < 1)
+		file->format_title_nonlocking(0L, result, _playcount2, 0L);
+	
+	//@c result contains either a number > 0 or an empty string.
+	//if the string is empty, @c atoi will return 0, so I do not need to check
+	//@c result myself.
+	const int plays = atoi(result);
+	if(plays == 0)
+		return 0;
+	
+	static const int avgrating = 3;
+	file->format_title_nonlocking(0L, result, _rating, 0L);
+	const int rating = result.length() > 0 ? atoi(result) : avgrating;
+	
+	const double age = difftime(lastPlayed, firstPlayed) / 3600;
+	const double recentness = difftime(now, lastPlayed) / 3600;
+	//assume a minimum of 1 plays to avoid a divide by zero
+	const double decay = max(plays, 1) * baseFrequency * baseDecay * rating * 100 / (max(age, baseFrequency) * avgrating) / 100;
+	const double rawhotness = max(decay - recentness, 0.0) * 100 / decay;
+	const double forecast = max(decay - (max(baseDecay - recentness, 0.0) / 2 + recentness), 0.0) * 100 / decay;
+	const double hotness = (rawhotness + forecast) / 2;
+
+	return static_cast<int>(hotness);
 }
