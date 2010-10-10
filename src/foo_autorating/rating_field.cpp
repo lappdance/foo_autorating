@@ -157,10 +157,10 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 	double rating = -1;
 
 	if(haveInfo && haveScripts && shouldRate) {
-		time_t now = time(0L);
+		time_t now = time(NULL);
 		
 		string8 result;
-		file->format_title_nonlocking(0L, result, _firstplayed, 0L);
+		file->format_title_nonlocking(NULL, result, _firstplayed, NULL);
 		time_t time = makeTime(result);
 		
 		//if the song has not been played, use the current time.
@@ -173,7 +173,7 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 		//so the math below will return a meaningful answer.
 		assert(now >= firstplayed && "song was played in future");
 		
-		file->format_title_nonlocking(0L, result, _added, 0L);
+		file->format_title_nonlocking(NULL, result, _added, NULL);
 		time = makeTime(result);
 		//versions of foo_playcount older than 2.3 do not record when a track was
 		//added to the library, and other statistic plugins may not record this value
@@ -188,8 +188,8 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 		static const int minimumAge = 5;
 		//if the song is less than a week old, there is not enough listening history
 		//to examine to give a meaningful rating.
-		if(!g_haveMinimumAge || (g_haveMinimumAge && age > minimumAge)) {
-			file->format_title_nonlocking(0L, result, _lastplayed, 0L);
+		if(!g_haveMinimumAge || (age > minimumAge)) {
+			file->format_title_nonlocking(NULL, result, _lastplayed, NULL);
 			time_t time = makeTime(result);
 
 			//like the first play time, set this number to a legitimate value
@@ -201,22 +201,26 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 			assert(firstplayDelta >= 0 && lastplayDelta >= 0 && "play times are not normalized");
 			
 			//use the official playback stat field, if it exists
-			file->format_title_nonlocking(0L, result, _playcount, 0L);
+			file->format_title_nonlocking(NULL, result, _playcount, NULL);
 			//if the field resolves to nothing, try the unofficial playback stat field
 			if(result.length() < 1)
-				file->format_title_nonlocking(0L, result, _playcount2, 0L);
+				file->format_title_nonlocking(NULL, result, _playcount2, NULL);
 			
 			//@c result contains either a number > 0 or an empty string.
 			//if the string is empty, @c atoi will return 0, so I do not need to check
 			//@c result myself.
 			const int playcount = atoi(result);
 
-			double length = info->get_length();
+			const double length = info->get_length();
 			//intercept, THEN slope
-			length += g_lengthIntercept;
-			length *= g_lengthModifier;
+//			length += g_lengthIntercept;
+//			length *= g_lengthModifier;
+
+			const double d1 = (length + 540) * 0.25;
+			static const double longBonus = 30;
+			const double d2 = pow(length / 10 / longBonus, 2);
+			const double d3 = d1 + d2;
 			
-			const double dd = (age - lastplayDelta + 50) / 10;
 			//do not allow a division by 0.
 			//if the user is not using a pseudo-rating for newly-added tracks, it is
 			//possible, though unlikely, that a new track's rating will be queried before
@@ -224,20 +228,25 @@ int RatingFieldProvider::getRating(metadb_handle* file) const {
 			//will treat all tracks as though they are at least 1 second old.
 			//@c age is measured in days, not seconds
 			const double oneSecond = 1.0 / secondsPerDay;
-			const double pp = 10000 * playcount / max(age, oneSecond);
+			const double playsPerPeriod = 10000 * playcount / max(age, oneSecond);
+			const double prediction = playsPerPeriod / g_predictionModifier;
+
+			const double agePenalty = age * g_agePenalty + 625 / age;
 			
-			const double agePenalty = age * g_agePenalty;
 			//prevent another division by 0.
 			//it is entirely possible that the song has not been played before its
 			//rating is queried, so check for 0 before dividing.
-			const double delayPenalty = g_delayPenalty * (age - firstplayDelta) / max(playcount, 1);
-			const double penalty = agePenalty + delayPenalty;
+			const double delayPenalty = g_delayPenalty * (age - firstplayDelta) / max(playcount, 1) / (d3 / 6 + 70);
 			
-			rating = 10 * ((length * playcount / 100) + 1000);
-			rating += pp * dd / 100;
-			rating += pp / g_predictionModifier;
-			rating -= penalty;
+			//I don't understand what this value is
+			const double dd = (age - lastplayDelta + 50) / 10;
+			const double pd2 = dd * playsPerPeriod / 100;
 			
+
+			rating = 10000 + (length * playcount / 10);
+			rating += prediction + pd2 - agePenalty - delayPenalty;
+			rating *= (1 - length * lastplayDelta * playcount * 5 / pow(10.0,8));
+
 			rating = max(rating, 0.0);
 		} else {
 			rating = 10000.0;
@@ -254,22 +263,22 @@ int RatingFieldProvider::getHotness(metadb_handle* file) const {
 	static const double baseFrequency = 90 * multiplier;
 	static const double baseDecay = 28 * multiplier;
 
-	const time_t now = time(0L);
+	const time_t now = time(NULL);
 	
 	string8 result;
-	file->format_title_nonlocking(0L, result, _lastplayed, 0L);
+	file->format_title_nonlocking(NULL, result, _lastplayed, NULL);
 	time_t time = makeTime(result);
 	const time_t lastPlayed = time ? time : now;
 
-	file->format_title_nonlocking(0L, result, _firstplayed, 0L);
+	file->format_title_nonlocking(NULL, result, _firstplayed, NULL);
 	time = makeTime(result);
 	const time_t firstPlayed = time ? time : now;
 
 	//use the official playback stat field, if it exists
-	file->format_title_nonlocking(0L, result, _playcount, 0L);
+	file->format_title_nonlocking(NULL, result, _playcount, NULL);
 	//if the field resolves to nothing, try the unofficial playback stat field
 	if(result.length() < 1)
-		file->format_title_nonlocking(0L, result, _playcount2, 0L);
+		file->format_title_nonlocking(NULL, result, _playcount2, NULL);
 	
 	//@c result contains either a number > 0 or an empty string.
 	//if the string is empty, @c atoi will return 0, so I do not need to check
@@ -279,7 +288,7 @@ int RatingFieldProvider::getHotness(metadb_handle* file) const {
 		return 0;
 	
 	static const int avgrating = 3;
-	file->format_title_nonlocking(0L, result, _rating, 0L);
+	file->format_title_nonlocking(NULL, result, _rating, NULL);
 	const int rating = result.length() > 0 ? atoi(result) : avgrating;
 	
 	const double age = difftime(lastPlayed, firstPlayed) / 3600;
