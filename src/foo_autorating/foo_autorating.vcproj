@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="pfc.lib foobar2000_sdk.lib shared.lib foobar2000_component_client.lib"
+				AdditionalDependencies="pfc.lib foobar2000_sdk.lib shared.lib foobar2000_component_client.lib foobar2000_sdk_helpers.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="C:\Users\jason\Code\foobar_sdk\foobar2000\shared;C:\Users\jason\Code\foobar_sdk\Debug"
 				GenerateDebugInformation="true"
@@ -145,7 +145,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="pfc.lib foobar2000_sdk.lib shared.lib foobar2000_component_client.lib"
+				AdditionalDependencies="pfc.lib foobar2000_sdk.lib shared.lib foobar2000_component_client.lib foobar2000_sdk_helpers.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="C:\Users\jason\Code\foobar_sdk\Release;C:\Users\jason\Code\foobar_sdk\foobar2000\shared"
 				GenerateDebugInformation="true"
@@ -255,6 +255,10 @@
 			</File>
 			<File
 				RelativePath=".\resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\resource1.h"
 				>
 			</File>
 			<File

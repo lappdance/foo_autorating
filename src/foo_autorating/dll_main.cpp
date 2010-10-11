@@ -1,11 +1,6 @@
 #include"stdafx.h"
 
-DECLARE_COMPONENT_VERSION(
-	// component name
-	"foo_autorating",
-	// component version
-	"0.1",
-	// about text, use \n to separate multiple lines
-	// This string cannot be NULL.
-   ""
-);
+//about message cannot be NULL
+DECLARE_COMPONENT_VERSION("foo_autorating", "0.7", "");
+
+VALIDATE_COMPONENT_FILENAME("foo_autorating.dll")

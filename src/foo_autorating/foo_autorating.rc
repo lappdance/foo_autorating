@@ -1,6 +1,6 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include "resource.h"
+#include "resource1.h"
 
 #define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
@@ -16,8 +16,10 @@
 // English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-LANGUAGE LANG_ENGLISH, SUBLANG_DEFAULT
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
+#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -25,18 +27,18 @@ LANGUAGE LANG_ENGLISH, SUBLANG_DEFAULT
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE  
+1 TEXTINCLUDE 
 BEGIN
     "resource1.h\0"
 END
 
-2 TEXTINCLUDE  
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE  
+3 TEXTINCLUDE 
 BEGIN
     "\r\n"
     "\0"
@@ -44,28 +46,12 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// String table
-//
-STRINGTABLE DISCARDABLE
-BEGIN
-	IDS_CRITERIA                         "Rating Criteria"
-	IDS_NOTIMPORTANT                     "Not important"
-	IDS_IMPORTANT                        "Important"
-	IDS_LENGTH                           "Length of track:"
-	IDS_AGE                              "Time since track was added to the library:"
-	IDS_DELAY                            "Delay before playing for first time:"
-	IDS_PREDICT                          "Predict listening behaviour:"
-	IDS_MINIMUMAGE                       "Use a temporary rating for tracks less than 5 days old."
-	IDS_RATEOUTSIDELIBRARY               "Show rating for tracks outside the library."
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
 //
+
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION 1,0,0,1
  PRODUCTVERSION 1,0,0,1
@@ -99,44 +85,51 @@ BEGIN
 END
 
 
-#endif    // English (U.S.) resources
-/////////////////////////////////////////////////////////////////////////////
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
+
 IDD_CONFIGURERATING DIALOGEX 0, 0, 326, 164
-STYLE DS_SETFONT | DS_FIXEDSYS | DS_3DLOOK | WS_CHILD
+STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "",IDC_CRITERIA,5,5,316,114
+    GROUPBOX        "",IDC_CRITERIA,5,5,316,99
     RTEXT           "",IDC_IMPORTANTTEXT,236,15,80,10
     LTEXT           "",IDC_NOTIMPORTANTTEXT,160,15,80,10
-       
-    CONTROL         "",IDC_LENGTH,"msctls_trackbar32",WS_CHILD | WS_TABSTOP |
-                   TBS_BOTH | TBS_NOTICKS | TBS_DOWNISLEFT,156,25,160,12
+    CONTROL         "",IDC_LENGTH,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP | 0x400,156,25,160,12
     LTEXT           "",IDC_LENGTHTEXT,10,25,135,10
-    CONTROL         "",IDC_AGE,"msctls_trackbar32",WS_CHILD | WS_TABSTOP |
-                   TBS_BOTH | TBS_NOTICKS | TBS_DOWNISLEFT,156,40,160,12
+    CONTROL         "",IDC_AGE,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP | 0x400,156,40,160,12
     LTEXT           "",IDC_AGETEXT,10,40,135,10
-    CONTROL         "",IDC_DELAY,"msctls_trackbar32",WS_CHILD | WS_TABSTOP |
-                   TBS_BOTH | TBS_NOTICKS | TBS_DOWNISLEFT,156,55,160,12
+    CONTROL         "",IDC_DELAY,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP | 0x400,156,55,160,12
     LTEXT           "",IDC_DELAYTEXT,10,55,135,10
-    CONTROL         "",IDC_PREDICT,"msctls_trackbar32",WS_CHILD | WS_TABSTOP |
-                   TBS_BOTH | TBS_NOTICKS | TBS_DOWNISLEFT,156,70,160,12
+    CONTROL         "",IDC_PREDICT,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP | 0x400,156,70,160,12
     LTEXT           "",IDC_PREDICTTEXT,10,70,135,10
-    
-    CONTROL         "",IDC_USEMINIMUMAGE,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,10,89,295,10
-    CONTROL         "",IDC_RATEOUTSIDELIBRARY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    10,103,295,10
-/*    
-    GROUPBOX        "",IDC_PREVIEW,5,129,316,h
-    EDITTEXT        IDC_TITLE,10,139,135,12,ES_AUTOHSCROLL | ES_READONLY,
-                    WS_EX_CLIENTEDGE
-*/    
+    CONTROL         "",IDC_USEMINIMUMAGE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,89,295,10
 END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_CRITERIA            "Rating Criteria"
+    IDS_IMPORTANT           "Important"
+    IDS_NOTIMPORTANT        "Not important"
+    IDS_LENGTH              "Track length"
+    IDS_AGE                 "When track was added to the library"
+    IDS_DELAY               "Delay before playing for first time"
+    IDS_PREDICT             "Predict listening behaviour"
+    IDS_MINIMUMAGE          "Use a temporary rating for tracks less than 5 days old"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
 
 #ifndef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

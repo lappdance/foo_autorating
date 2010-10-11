@@ -4,14 +4,12 @@
 #include"string_resource.h"
 #include"variables.h"
 #include"update_callback.h"
-#define _USE_MATH_DEFINES 1
-#include<math.h>
 using namespace auto_rating;
 using std::wstring;
 
 namespace auto_rating {
 
-preferences_page_factory_t<ConfigDialog> g_factory;
+static preferences_page_factory_t<ConfigDialogImpl> g_impl_factory;
 
 } //~namespace auto_rating
 
@@ -42,52 +40,42 @@ LRESULT ConfigDialog::onInitDialog(HWND focus, LPARAM lparam) {
 	}
 	
 	WTL::CTrackBarCtrl track = this->GetDlgItem(IDC_LENGTH);
-	track.SetRange(0, 8);
-	track.SetPos(static_cast<int>(log(g_lengthIntercept / 2836.0) / -0.7));
-		
-	track = this->GetDlgItem(IDC_AGE);
-	track.SetRange(0, 8);
-	track.SetPos(static_cast<int>((g_agePenalty - 0.50f) / 0.125f));
+	track.SetRange(0, 6);
+	track.SetPos((g_lengthIntercept - 1) / 180);
 	
+	track = this->GetDlgItem(IDC_AGE);
+	track.SetRange(0, 10);
+	track.SetPos(static_cast<int>((g_agePenalty - 1.0f) * 10));
+
 	track = this->GetDlgItem(IDC_DELAY);
 	track.SetRange(0, 8);
-	track.SetPos(g_delayPenalty);
+	track.SetPos(g_delayPenalty / 50 - 6);
 	
 	track = this->GetDlgItem(IDC_PREDICT);
 	track.SetRange(0, 8);
-	track.SetPos((g_predictionModifier - 20) / 10);
+	track.SetPos(g_predictionModifier / 10 - 2);
 	
 	this->CheckDlgButton(IDC_USEMINIMUMAGE, g_haveMinimumAge);
-	this->CheckDlgButton(IDC_RATEOUTSIDELIBRARY, g_rateOutsideLibrary);
 	
 	return true;
 }
 
 LRESULT ConfigDialog::onDestroy() {
 	g_haveMinimumAge = this->IsDlgButtonChecked(IDC_USEMINIMUMAGE) != 0;
-	g_rateOutsideLibrary = this->IsDlgButtonChecked(IDC_RATEOUTSIDELIBRARY) != 0;
 	
 	WTL::CTrackBarCtrl track = this->GetDlgItem(IDC_AGE);
-	g_agePenalty = 0.50f + 0.125f * track.GetPos();
+	g_agePenalty = 1.0f + (track.GetPos() / 10.0f);
 	
 	track = this->GetDlgItem(IDC_DELAY);
-	g_delayPenalty = track.GetPos();
+	g_delayPenalty = (track.GetPos() + 6) * 50;
 	
 	track = this->GetDlgItem(IDC_PREDICT);
-	g_predictionModifier = 20 + 10 * track.GetPos();
+	g_predictionModifier = (track.GetPos() + 2) * 10;
 	
 	track = this->GetDlgItem(IDC_LENGTH);
-	const int x = track.GetPos();
-	//these equations are very strange.
-	//they are based off of carpman's values, but fitted to a curve using powers of
-	//@c e and polynomial equations.
-	//I do not know how carpman arrived at the original values.
-	g_lengthModifier = static_cast<float>(-0.0033 * x * x * x +
-	                                       0.0395 * x * x +
-	                                       0.0072 * x +
-	                                       0.0622
-	                                      );
-	g_lengthIntercept = static_cast<int>(2836 * pow(M_E, x * -0.7));
+	g_lengthIntercept = (track.GetPos() + 1) * 180;
+	g_lengthModifier = (180.0f + g_lengthIntercept) / 180.0f;
+	g_longTrackModifier = 12 * g_lengthIntercept + 4000;
 	
 	this->emitRatingChanged();
 	
@@ -98,10 +86,8 @@ void ConfigDialog::emitRatingChanged() const {
 	UpdateCallback::registerCallback();
 }
 
-HWND ConfigDialog::create(HWND parent) {
-	return parent_type::Create(parent, 0L);
-}
-
-const char* ConfigDialog::get_name() { return "Auto Rating"; }
+const char* ConfigDialogImpl::get_name() { return "Auto Rating"; }
 
 void ConfigDialog::reset() {}
+
+HWND ConfigDialog::create(HWND) { return NULL; }
